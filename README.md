@@ -2,58 +2,110 @@
 
 Sitio estático para GitHub Pages con dominio propio.
 
-## Deploy en GitHub Pages
+---
 
-1. Sube el repo a GitHub (si no está ya).
-2. **Settings** del repo → **Pages**.
-3. **Source**: Deploy from a branch.
-4. **Branch**: `main` (o `master`), carpeta **/ (root)**.
-5. Guarda. En unos minutos el sitio estará en `https://tu-usuario.github.io/florojas/`.
+## 1. Deploy en GitHub Pages
 
-## Dominio propio
-
-1. En **Settings → Pages → Custom domain** escribe tu dominio (ej: `florenciarojas.com` o `www.florenciarojas.com`).
-2. Crea el archivo **CNAME** en la raíz con solo el dominio (una línea):
+1. **Sube el repo** a GitHub (crea el repo en github.com y haz push):
+   ```bash
+   git add .
+   git commit -m "Deploy inicial"
+   git branch -M main
+   git remote add origin https://github.com/TU-USUARIO/florojas.git
+   git push -u origin main
    ```
-   florenciarojas.com
+2. En GitHub: **Settings** del repositorio → **Pages** (menú izquierdo).
+3. En **Build and deployment**:
+   - **Source**: Deploy from a branch
+   - **Branch**: `main` → carpeta **/ (root)** → Save
+4. En 1–2 minutos el sitio estará en:  
+   `https://TU-USUARIO.github.io/florojas/`
+
+---
+
+## 2. Conectar Namecheap con GitHub Pages
+
+### Paso A — Dominio en GitHub
+
+1. En el repo: **Settings → Pages**.
+2. En **Custom domain** escribe tu dominio exacto, por ejemplo:
+   - `tudominio.com` (sin www), **o**
+   - `www.tudominio.com` (con www)
+3. Clic en **Save**.
+4. El archivo **CNAME** en la raíz del proyecto debe tener **solo** ese dominio (una línea, sin `https://`). Ejemplo:
    ```
-   (Sustituye por tu dominio real.)
-3. En tu proveedor de dominio (DonWeb, GoDaddy, Cloudflare, etc.):
-   - Para **dominio apex** (ej: `florenciarojas.com`): añade registros **A** apuntando a:
-     - `185.199.108.153`
-     - `185.199.109.153`
-     - `185.199.110.153`
-     - `185.199.111.153`
-   - Para **subdominio www** (ej: `www.florenciarojas.com`): crea un **CNAME** de `www` a `tu-usuario.github.io`.
-4. Espera la propagación DNS (puede tardar hasta 24 h). En Pages verás “DNS check successful” cuando esté bien.
+   tudominio.com
+   ```
+   Si lo cambias, haz commit y push.
 
-## Reemplazar el dominio en el proyecto
+### Paso B — DNS en Namecheap
 
-Antes o después del deploy, sustituye **`tudominio.com`** por tu dominio real en:
+1. Entra en **Namecheap** → **Domain List** → al lado de tu dominio clic en **Manage**.
+2. Abre la pestaña **Advanced DNS**.
 
-- **index.html**: `canonical`, `og:url`, `og:image`, `twitter:image`.
-- **sitemap.xml**: la URL dentro de `<loc>`.
-- **robots.txt**: la URL del `Sitemap:`.
-- **CNAME**: solo debe contener tu dominio (ej: `florenciarojas.com`).
+**Opción A — Usar el dominio sin www** (ej: `tudominio.com`)
+
+- Si hay registros de “URL Redirect” o “Parking” para @ o www, bórralos o desactívalos.
+- Añade **4 registros tipo A**:
+
+| Type | Host | Value           | TTL  |
+|------|------|-----------------|------|
+| A    | @    | 185.199.108.153 | 300  |
+| A    | @    | 185.199.109.153 | 300  |
+| A    | @    | 185.199.110.153 | 300  |
+| A    | @    | 185.199.111.153 | 300  |
+
+- (Opcional) Para que **www** redirija al dominio sin www, añade un CNAME:  
+  Host: **www**, Value: **TU-USUARIO.github.io** (tu usuario de GitHub).
+
+**Opción B — Usar www** (ej: `www.tudominio.com`)
+
+- Añade **1 registro CNAME**:
+  - Host: **www**
+  - Value: **TU-USUARIO.github.io** (tu usuario de GitHub, sin `https://` ni `/florojas`)
+- Para que el dominio sin www también funcione, añade los **4 registros A** de la tabla de arriba (Host: `@`).
+
+3. Guarda en Namecheap. La propagación DNS puede tardar **unos minutos hasta 24 horas**.
+
+### Paso C — Comprobar en GitHub
+
+1. Vuelve a **Settings → Pages** en el repo.
+2. Cuando el DNS esté bien verás **DNS check successful** y podrás marcar **Enforce HTTPS**.
+3. Activa **Enforce HTTPS** para que el sitio cargue con `https://`.
+
+---
+
+## 3. Dominio en el proyecto (SEO)
+
+Sustituye **`tudominio.com`** por tu dominio real en:
+
+- **CNAME**: una línea con el dominio.
+- **index.html**: meta `canonical`, `og:url`, `og:image`, `twitter:image`.
+- **sitemap.xml**: la URL en `<loc>`.
+- **robots.txt**: la línea `Sitemap:`.
+
+---
 
 ## SEO y sitemap
 
 - **index.html**: incluye meta description, canonical, Open Graph y Twitter Card.
-- **sitemap.xml**: para un sitio de una sola página solo hace falta la URL de la home; ya está configurada.
+- **sitemap.xml**: una sola URL (la home); ya está configurada.
 - **robots.txt**: permite todo e indica la ruta del sitemap.
 
-Opcional: añade una imagen **og-image.jpg** (recomendado 1200×630 px) en la raíz y usa su URL en las meta `og:image` y `twitter:image` para la vista previa en redes.
+Opcional: añade **og-image.jpg** (1200×630 px) en la raíz y usa su URL en las meta `og:image` y `twitter:image` para la vista previa en redes.
 
-## Estructura recomendada en la raíz
+## Estructura en la raíz
 
 ```
 florojas/
-├── index.html      ← página principal (obligatorio para GitHub Pages)
+├── index.html
+├── favicon.ico     ← favicon (pestaña del navegador). Opcional: favicon-32x32.png, favicon-16x16.png, apple-touch-icon.png
 ├── sitemap.xml
 ├── robots.txt
 ├── CNAME           ← tu dominio (ej: florenciarojas.com)
-├── .nojekyll       ← evita que Jekyll procese el repo
+├── .nojekyll
+├── images/
+│   ├── hero/       ← foto1.jpg, foto2.jpg
+│   └── portfolio/  ← 01-growth.jpg, 02-flyers.jpg, etc.
 └── README.md
 ```
-
-`home.html` puede eliminarse si solo quieres servir `index.html`.
